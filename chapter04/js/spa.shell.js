@@ -30,6 +30,8 @@ class Shell {
       isChatRetracted: true
     };
     this.jqueryMap = {};
+    this.util = new Util();
+    this.chat = new Chat(this.util);
   }
 
   copyAnchorMap() {
@@ -45,9 +47,9 @@ class Shell {
   }
 
   toggleChat(doExtend, callback) {
-    const px_chat_ht = this.jqueryMap.$chat.height(),
-          isOpen = px_chat_ht === this.configMap.chatExtendHeight,
-          isClosed = px_chat_ht === this.configMap.chatRetractHeight,
+    const pxChatHt = this.jqueryMap.$chat.height(),
+          isOpen = pxChatHt === this.configMap.chatExtendHeight,
+          isClosed = pxChatHt === this.configMap.chatRetractHeight,
           isSliding = !isOpen && !isClosed;
 
     if (isSliding) {return false;}
@@ -169,6 +171,9 @@ class Shell {
     $.uriAnchor.configModule({
       schema_map: this.configMap.anchorSchemaMap
     });
+
+    this.chat.configModule({});
+    this.chat.initModule(this.jqueryMap.$chat);
 
     $(window)
       .bind('hashchange', this.onHashchange.bind(this))

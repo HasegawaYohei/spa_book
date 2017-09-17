@@ -1,0 +1,17 @@
+this is my text.
+baz baz baz baz baz baz baz baz
+hoge hoge hoge hoge hoge hoge hoge hoge hoge hoge hoge hoge hoge Hoge hoge hoge hoge hoge hoge hoge
+foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo
+hoge hoge hoge hoge hoge nogizaka nogi zaka
+baz hoge foo piyo bar moke
+foo
+function () {
+  if () {
+    for () {
+
+    }
+  }
+}

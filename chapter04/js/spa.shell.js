@@ -4,6 +4,7 @@ class Shell {
       anchorSchemaMap: {
         chat: { opened: true, closed: true }
       },
+      resizeInterval: 200,
       mainHtml: ''
         + '<div class="spa-shell-head">'
           + '<div class="spa-shell-head-logo"></div>'
@@ -19,6 +20,7 @@ class Shell {
     };
     this.stateMap = {
       anchorMap: {},
+      resizeIdto: undefined
     };
     this.jqueryMap = {};
     this.util = new Util();
@@ -164,6 +166,18 @@ class Shell {
     return false;
   }
 
+  onResize() {
+    if (this.stateMap.resizeIdto) return true;
+
+    this.chat.handleResize();
+    this.stateMap.resizeIdto = setTimeout(
+      () => this.stateMap.resizeIdto = undefined,
+      this.configMap.resizeInterval
+    );
+
+    return true;
+  }
+
   setChatAnchor(positionType) {
     return this.changeAnchorPart({chat: positionType});
   }
@@ -185,6 +199,7 @@ class Shell {
     this.chat.initModule(this.jqueryMap.$container);
 
     $(window)
+      .bind('resize', this.onResize.bind(this))
       .bind('hashchange', this.onHashchange.bind(this))
       .trigger('hashchange');
   }

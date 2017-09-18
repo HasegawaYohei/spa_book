@@ -34,8 +34,10 @@ class Chat {
 
       sliderOpenTime: 250,
       sliderCloseTime: 250,
-      sliderOpenedEm: 16,
+      sliderOpenedEm: 18,
       sliderClosedEm: 2,
+      sliderOpenedMinEm: 10,
+      windowHeightMinEm: 20,
       sliderOpenedTitle: 'Click to close',
       sliderClosedTitle: 'Click to open',
 
@@ -79,7 +81,8 @@ class Chat {
 
   setPxSizes() {
     const pxPerEm = this.getEmSize(this.jqueryMap.$slider.get(0)),
-          openedHeightEm = this.configMap.sliderOpenedEm;
+          windowHeightEm = Math.floor(($(window).height() / pxPerEm) + 0.5),
+          openedHeightEm = windowHeightEm > this.configMap.windowHeightMinEm ? this.configMap.sliderOpenedEm : this.configMap.sliderOpenedMinEm;
     this.stateMap.pxPerEm = pxPerEm;
     this.stateMap.sliderClosedPx = this.configMap.sliderClosedEm * pxPerEm;
     this.stateMap.sliderOpenedPx = openedHeightEm * pxPerEm;
@@ -140,6 +143,31 @@ class Chat {
     else if (this.stateMap.positionType === 'closed') this.configMap.setChatAnchor('opened');
 
     return false;
+  }
+
+  removeSlider() {
+    if (this.jqueryMap.$slider) {
+      this.jqueryMap.$slider.remove();
+      this.jqueryMap = {};
+    }
+    this.stateMap.$appendTarget = null;
+    this.stateMap.positionType = 'closed';
+
+    this.configMap.chatModel = null;
+    this.configMap.peopleModel = null;
+    this.configMap.setChatAnchor = null;
+    return true;
+  }
+
+  handleResize() {
+    if (!this.jqueryMap.$slider) return false;
+
+    this.setPxSizes();
+    if (this.stateMap.positionType === 'opened') {
+      this.jqueryMap.$slider.css({height: this.stateMap.sliderOpenedPx});
+    }
+
+    return true;
   }
 
   configModule(inputMap) {

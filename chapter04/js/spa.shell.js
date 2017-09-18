@@ -2,7 +2,7 @@ class Shell {
   constructor() {
     this.configMap = {
       anchorSchemaMap: {
-        chat: { open: true, closed: true }
+        chat: { opened: true, closed: true }
       },
       mainHtml: ''
         + '<div class="spa-shell-head">'
@@ -15,19 +15,10 @@ class Shell {
           + '<div class="spa-shell-main-content"></div>'
         + '</div>'
         + '<div class="spa-shell-foot"></div>'
-        + '<div class="spa-shell-chat"></div>'
         + '<div class="spa-shell-modal"></div>',
-      chatExtendTime: 200,
-      chatRetractTime: 200,
-      chatExtendHeight: 450,
-      chatRetractHeight: 15,
-      chatExtendedTitle: 'Click to retract',
-      chatRetractedTitle: 'Click to extend'
     };
     this.stateMap = {
-      container: null,
       anchorMap: {},
-      isChatRetracted: true
     };
     this.jqueryMap = {};
     this.util = new Util();
@@ -41,8 +32,7 @@ class Shell {
   setJqueryMap() {
     const $container = this.stateMap.$container;
     this.jqueryMap = {
-      $container: $container,
-      $chat: $container.find('.spa-shell-chat')
+      $container: $container
     };
   }
 
@@ -117,7 +107,8 @@ class Shell {
 
   onHashchange(event) {
     const anchorMapPrevious = this.copyAnchorMap();
-    let anchorMapProposed;
+    let anchorMapProposed,
+        isOk = true;
 
     try {
       anchorMapProposed = $.uriAnchor.makeAnchorMap();
@@ -135,17 +126,30 @@ class Shell {
     if (!anchorMapPrevious || sChatPrevious !== sChatProposed) {
       const sChatProposed = anchorMapProposed.chat;
       switch (sChatProposed) {
-        case 'open':
-          this.toggleChat(true);
-          break;
+        case 'opened':
+          isOk = this.chat.setSliderPosition('opened');
+        break;
+
         case 'closed':
-          this.toggleChat(false);
-          break;
+          isOk = this.chat.setSliderPosition('closed');
+        break;
+
         default:
-          this.toggleChat(false);
+          this.chat.setSliderPosition('closed');
           delete anchorMapProposed.chat;
           $.uriAnchor.setAnchor(anchorMapProposed, null, true);
           break;
+      }
+    }
+
+    if (!isOk) {
+      if (anchorMapPrevious) {
+        $.uriAnchor.setAnchor(anchorMapPrevious, null, true);
+        this.stateMap.anchorMap = anchorMapPrevious;
+      }
+      else {
+        delete anchorMapProposed.chat;
+        $.uriAnchor.setAnchor(anchorMapProposed, null, true);
       }
     }
 
@@ -160,20 +164,25 @@ class Shell {
     return false;
   }
 
+  setChatAnchor(positionType) {
+    return this.changeAnchorPart({chat: positionType});
+  }
+
   initModule($container) {
     this.stateMap.$container = $container;
     $container.html( this.configMap.mainHtml );
     this.setJqueryMap();
 
-    this.stateMap.isChatRetracted = true;
-    this.jqueryMap.$chat.attr('title', this.configMap.chatRetractedTitle).click(this.onClickChat.bind(this));
-
     $.uriAnchor.configModule({
       schema_map: this.configMap.anchorSchemaMap
     });
 
-    this.chat.configModule({});
-    this.chat.initModule(this.jqueryMap.$chat);
+    this.chat.configModule({
+      setChatAnchor: this.setChatAnchor.bind(this),
+      // chatModel: this.model.chat,
+      // peopleModel: this.model.people
+    });
+    this.chat.initModule(this.jqueryMap.$container);
 
     $(window)
       .bind('hashchange', this.onHashchange.bind(this))
